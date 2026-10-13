@@ -1,0 +1,21 @@
+{
+  "customer":
+  {
+    "name": "Dominik",
+    "lastName": "Dąb",
+    "email": "dab@wp.pl",
+    "phoneNumber": "611222333"
+  },
+  "products":
+  [{
+    "code": "abc123",
+    "quantity": 2,
+    "unit": "kg"
+  },
+    {
+    "code": "abc321",
+    "quantity": 5,
+    "unit": "m"
+    }
+  ]
+}
