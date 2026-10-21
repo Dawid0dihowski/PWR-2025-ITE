@@ -1,0 +1,1002 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.0cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{array,booktabs,longtable,multirow}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{microtype,caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{xcolor}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.5pt}
+\renewcommand{\arraystretch}{1.15}
+\linespread{1.0}
+\setlength{\abovedisplayskip}{6pt}
+\setlength{\belowdisplayskip}{6pt}
+\setlength{\abovedisplayshortskip}{4pt}
+\setlength{\belowdisplayshortskip}{4pt}
+\graphicspath{{./}}
+\setlength{\headheight}{16pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Logika układów cyfrowych}
+\rhead{Ćwiczenie 202(B)}
+\cfoot{\thepage}
+\newcommand{\linia}[1][6cm]{\rule{#1}{0.4pt}}
+\newcommand{\xor}{\mathbin{\oplus}}
+\newcommand{\xnor}{\mathbin{\odot}}
+\newcommand{\img}[3][0.92\textwidth]{%
+  \begin{figure}[H]\centering
+  \includegraphics[width=#1,height=0.58\textheight,keepaspectratio]{#2}
+  \caption{#3}
+  \end{figure}}
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\centering
+\vspace*{0.15\textheight}
+{\LARGE \textbf{Logika Układów Cyfrowych}\\[0.7cm]}
+{\Large Sprawozdanie z ćwiczenia 202(B)\\[0.5cm]}
+{\large Projektowanie i minimalizacja\\układów kombinacyjnych\\[1.5cm]}
+{\Large Dawid Kocyła i Ida Langowska\\[0.7cm]}
+{\large 20 października 2025}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+\setcounter{tocdepth}{1}
+\tableofcontents
+\newpage
+\section{Cel ćwiczenia}
+Celem ćwiczenia było projektowanie i minimalizacja układów kombinacyjnych: komparatora, układu AND/OR, sumatorów, subtraktora, układów uzupełnienia do dwóch oraz detektora przedziału 5--10.
+
+\subsection{Metoda opracowania i oznaczenia}
+Przyjęto logikę dodatnią. Symbol $+$ oznacza sumę logiczną (OR),
+iloczyn oznacza AND, kreska nad symbolem -- negację, $\oplus$ -- XOR,
+a $\odot$ -- XNOR. W równaniach arytmetycznych znak $+$ oznacza dodawanie liczb.
+Najwyższy indeks bitu odpowiada pozycji najbardziej znaczącej.
+
+Mapy Karnaugha sporządzono na podstawie tabel prawdy. Współrzędne
+dwubitowe zapisano w kolejności Graya: $00,01,11,10$.
+Małe liczby w polach oznaczają numery mintermów, zgodnie z kolejnością
+zmiennych podaną przy osiach. Obwiednie oznaczają grupy jedynek;
+pod każdą mapą podano ich numery oraz wynikające z nich iloczyny.
+Przeciwległe krawędzie mapy sąsiadują ze sobą, dlatego grupę przechodzącą
+przez krawędź pokazano jako dwa fragmenty tego samego koloru.
+Grupy mogą się nakładać. Nie wprowadzano stanów obojętnych.
+
+W zadaniach 5 i 6 wykorzystano gotowe bloki arytmetyczne, a w części B
+zadania 7 -- wcześniej wyprowadzony układ XOR i sumatory. Nie wymagają one
+odrębnych map Karnaugha całego układu wielobitowego.
+Tabele testów przedstawiają wyniki oczekiwane na podstawie modelu logicznego;
+same przykłady nie stanowią zapisu pełnych pomiarów ani wszystkich prób symulacji.
+
+% ================================================================
+\section{Zadanie 1 -- Komparator 2-bitowy}
+\subsection{Treść zadania}
+Zaprojektować komparator dwóch liczb 2-bitowych $A=A_1A_0$ oraz $B=B_1B_0$ w dwóch wariantach:
+\begin{enumerate}[label=\alph*)]
+\item dwa wyjścia: 00  $A=B$, 01  $A>B$, 10  $A<B$, 11 stan nieokreślony,
+\item trzy wyjścia, z których każde odpowiada osobno relacji $A=B$, $A>B$ albo $A<B$.
+\end{enumerate}
+\subsection{Tabela prawdy}
+\begin{center}
+\small
+\begin{tabular}{cccc|cc|ccc}
+\toprule
+$A_1$&$A_0$&$B_1$&$B_0$&$Y_1$&$Y_0$&$E$&$G$&$L$\\
+\midrule
+0&0&0&0&0&0&1&0&0\\
+0&0&0&1&1&0&0&0&1\\
+0&0&1&0&1&0&0&0&1\\
+0&0&1&1&1&0&0&0&1\\
+0&1&0&0&0&1&0&1&0\\
+0&1&0&1&0&0&1&0&0\\
+0&1&1&0&1&0&0&0&1\\
+0&1&1&1&1&0&0&0&1\\
+1&0&0&0&0&1&0&1&0\\
+1&0&0&1&0&1&0&1&0\\
+1&0&1&0&0&0&1&0&0\\
+1&0&1&1&1&0&0&0&1\\
+1&1&0&0&0&1&0&1&0\\
+1&1&0&1&0&1&0&1&0\\
+1&1&1&0&0&1&0&1&0\\
+1&1&1&1&0&0&1&0&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+W wariancie a) zachodzi $Y_0=G$ oraz $Y_1=L$.
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,4);
+\node[anchor=east] at (-0.7,4.45) {$ A_1A_0\backslash B_1B_0 $};
+\node at (0.5,4.4) {$ 00 $};
+\node at (1.5,4.4) {$ 01 $};
+\node at (2.5,4.4) {$ 11 $};
+\node at (3.5,4.4) {$ 10 $};
+\node at (-.4,3.5) {$ 00 $};
+\node at (0.5,3.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,3.98) {0};
+\node at (1.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,3.98) {1};
+\node at (2.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,3.98) {3};
+\node at (3.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,3.98) {2};
+\node at (-.4,2.5) {$ 01 $};
+\node at (0.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,2.98) {4};
+\node at (1.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,2.98) {5};
+\node at (2.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,2.98) {7};
+\node at (3.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,2.98) {6};
+\node at (-.4,1.5) {$ 11 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {12};
+\node at (1.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {13};
+\node at (2.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {15};
+\node at (3.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {14};
+\node at (-.4,0.5) {$ 10 $};
+\node at (0.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {8};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {9};
+\node at (2.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {11};
+\node at (3.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {10};
+\draw[blue!75!black,thick,rounded corners=4pt] (0.1,3.1) rectangle (0.9,3.9);
+\draw[red!75!black,thick,rounded corners=4pt] (1.1400000000000001,2.14) rectangle (1.8599999999999999,2.86);
+\draw[green!45!black,thick,rounded corners=4pt] (3.18,0.18) rectangle (3.82,0.8200000000000001);
+\draw[orange!85!black,thick,rounded corners=4pt] (2.1,1.1) rectangle (2.9,1.9);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $E$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{0\}$}: $\overline{A_1}\overline{A_0}\overline{B_1}\overline{B_0}$.
+\item \textcolor{red!75!black}{$\{5\}$}: $\overline{A_1}A_0\overline{B_1}B_0$.
+\item \textcolor{green!45!black}{$\{10\}$}: $A_1\overline{A_0}B_1\overline{B_0}$.
+\item \textcolor{orange!85!black}{$\{15\}$}: $A_1A_0B_1B_0$.
+\end{itemize}\end{minipage}\par\medskip
+Jedynki funkcji $E$ są odizolowane. Minimalna suma iloczynów zawiera cztery mintermy; wygodniejszą realizację daje iloczyn dwóch funkcji XNOR.
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,4);
+\node[anchor=east] at (-0.7,4.45) {$ A_1A_0\backslash B_1B_0 $};
+\node at (0.5,4.4) {$ 00 $};
+\node at (1.5,4.4) {$ 01 $};
+\node at (2.5,4.4) {$ 11 $};
+\node at (3.5,4.4) {$ 10 $};
+\node at (-.4,3.5) {$ 00 $};
+\node at (0.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,3.98) {0};
+\node at (1.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,3.98) {1};
+\node at (2.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,3.98) {3};
+\node at (3.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,3.98) {2};
+\node at (-.4,2.5) {$ 01 $};
+\node at (0.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,2.98) {4};
+\node at (1.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,2.98) {5};
+\node at (2.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,2.98) {7};
+\node at (3.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,2.98) {6};
+\node at (-.4,1.5) {$ 11 $};
+\node at (0.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {12};
+\node at (1.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {13};
+\node at (2.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {15};
+\node at (3.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {14};
+\node at (-.4,0.5) {$ 10 $};
+\node at (0.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {8};
+\node at (1.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {9};
+\node at (2.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {11};
+\node at (3.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {10};
+\draw[blue!75!black,thick,rounded corners=4pt] (0.1,0.1) rectangle (1.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (0.14,1.1400000000000001) rectangle (0.86,1.8599999999999999);
+\draw[red!75!black,thick,rounded corners=4pt] (3.14,1.1400000000000001) rectangle (3.86,1.8599999999999999);
+\draw[green!45!black,thick,rounded corners=4pt] (0.18,1.18) rectangle (0.8200000000000001,2.82);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $G$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{8,9,12,13\}$}: $A_1\overline{B_1}$.
+\item \textcolor{red!75!black}{$\{12,14\}$}: $A_1A_0\overline{B_0}$.
+\item \textcolor{green!45!black}{$\{4,12\}$}: $A_0\overline{B_1}\overline{B_0}$.
+\end{itemize}\end{minipage}\par\medskip
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,4);
+\node[anchor=east] at (-0.7,4.45) {$ A_1A_0\backslash B_1B_0 $};
+\node at (0.5,4.4) {$ 00 $};
+\node at (1.5,4.4) {$ 01 $};
+\node at (2.5,4.4) {$ 11 $};
+\node at (3.5,4.4) {$ 10 $};
+\node at (-.4,3.5) {$ 00 $};
+\node at (0.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,3.98) {0};
+\node at (1.5,3.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,3.98) {1};
+\node at (2.5,3.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,3.98) {3};
+\node at (3.5,3.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,3.98) {2};
+\node at (-.4,2.5) {$ 01 $};
+\node at (0.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,2.98) {4};
+\node at (1.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,2.98) {5};
+\node at (2.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,2.98) {7};
+\node at (3.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,2.98) {6};
+\node at (-.4,1.5) {$ 11 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {12};
+\node at (1.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {13};
+\node at (2.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {15};
+\node at (3.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {14};
+\node at (-.4,0.5) {$ 10 $};
+\node at (0.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {8};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {9};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {11};
+\node at (3.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {10};
+\draw[blue!75!black,thick,rounded corners=4pt] (2.1,2.1) rectangle (3.9,3.9);
+\draw[red!75!black,thick,rounded corners=4pt] (2.14,0.14) rectangle (2.86,0.86);
+\draw[red!75!black,thick,rounded corners=4pt] (2.14,3.14) rectangle (2.86,3.86);
+\draw[green!45!black,thick,rounded corners=4pt] (1.18,3.18) rectangle (2.82,3.82);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $L$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{2,3,6,7\}$}: $\overline{A_1}B_1$.
+\item \textcolor{red!75!black}{$\{3,11\}$}: $\overline{A_0}B_1B_0$.
+\item \textcolor{green!45!black}{$\{1,3\}$}: $\overline{A_1}\overline{A_0}B_0$.
+\end{itemize}\end{minipage}\par\medskip
+Mapy $Y_0$ i $Y_1$ są identyczne z mapami $G$ i $L$. Nieużywany kod wyjściowy 11 nie stanowi stanu obojętnego na mapach: każda kombinacja wejść ma określony wynik.
+
+\subsection{Minimalizacja}
+\[
+\begin{aligned}
+E&=(\overline{A_1}\overline{B_1}+A_1B_1)
+   (\overline{A_0}\overline{B_0}+A_0B_0)\\
+ &= (A_1\xnor B_1)(A_0\xnor B_0).
+\end{aligned}
+\]
+\[
+\begin{aligned}
+G&=A_1\overline{B_1}+(A_1B_1+\overline{A_1}\overline{B_1})A_0\overline{B_0}\\
+ &=A_1(\overline{B_1}+A_0\overline{B_0})
+   +\overline{B_1}A_0\overline{B_0}\\
+ &=A_1\overline{B_1}+A_0A_1\overline{B_0}
+   +A_0\overline{B_1}\overline{B_0}.
+\end{aligned}
+\]
+\[
+\begin{aligned}
+L&=\overline{A_1}B_1+(A_1B_1+\overline{A_1}\overline{B_1})\overline{A_0}B_0\\
+ &=B_1(\overline{A_1}+\overline{A_0}B_0)
+   +\overline{A_1}\overline{A_0}B_0\\
+ &=\overline{A_1}B_1+\overline{A_0}B_0B_1
+   +\overline{A_1}\overline{A_0}B_0.
+\end{aligned}
+\]
+Zastosowano $x+\overline{x}y=x+y$. Dla wariantu a):
+\[
+Y_0=G,\qquad Y_1=L.
+\]
+\subsection{Realizacja -- wariant a)}
+Na rysunku przedstawiono realizację z dwoma wyjściami kodującymi wynik porównania.
+\img{zadanie_1a.jpg}{Komparator dwubitowy z kodowaniem wyniku na dwóch wyjściach.}
+\subsection{Realizacja -- wariant b)}
+W wariancie b) zastosowano trzy niezależne wyjścia: $G$, $L$ i $E$.
+\img{zadanie_1b.jpg}{Komparator dwubitowy z trzema wyjściami relacji.}
+\subsection{Weryfikacja}
+Dla $(A,B)=(00,00)$ aktywne jest $E$, dla $(11,10)$ -- $G$, a dla $(01,10)$ -- $L$. W wariancie a) kod 11 nie występuje.
+\subsection{Wnioski}
+Trzy wyjścia wskazują relacje bezpośrednio; dwa pozwalają je zakodować mniejszą liczbą linii.
+% ================================================================
+\section{Zadanie 2 -- Układ realizujący sumę lub iloczyn logiczny}
+\subsection{Treść zadania}
+Zaprojektować układ, który w zależności od sygnału sterującego realizuje sumę logiczną lub iloczyn logiczny.
+\subsection{Założenia i tabela prawdy}
+Przyjęto:
+\[
+S=0\Rightarrow Y=A\cdot B,\qquad S=1\Rightarrow Y=A+B.
+\]
+\begin{center}
+\begin{tabular}{ccc|c}
+\toprule
+$S$&$A$&$B$&$Y$\\
+\midrule
+0&0&0&0\\
+0&0&1&0\\
+0&1&0&0\\
+0&1&1&1\\
+1&0&0&0\\
+1&0&1&1\\
+1&1&0&1\\
+1&1&1&1\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,2);
+\node[anchor=east] at (-0.7,2.45) {$ S\backslash AB $};
+\node at (0.5,2.4) {$ 00 $};
+\node at (1.5,2.4) {$ 01 $};
+\node at (2.5,2.4) {$ 11 $};
+\node at (3.5,2.4) {$ 10 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (2.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {3};
+\node at (3.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {2};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {4};
+\node at (1.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {5};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {7};
+\node at (3.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {6};
+\draw[blue!75!black,thick,rounded corners=4pt] (2.1,0.1) rectangle (2.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (2.14,0.14) rectangle (3.86,0.86);
+\draw[green!45!black,thick,rounded corners=4pt] (1.18,0.18) rectangle (2.82,0.8200000000000001);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $Y$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{3,7\}$}: $AB$.
+\item \textcolor{red!75!black}{$\{6,7\}$}: $SA$.
+\item \textcolor{green!45!black}{$\{5,7\}$}: $SB$.
+\end{itemize}\end{minipage}\par\medskip
+
+\subsection{Minimalizacja}
+\[
+\begin{aligned}
+Y&=\overline{S}AB+S(A+B)\\
+ &=\overline{S}AB+SA+SB\\
+ &=AB+SA+SB=AB+S(A+B).
+\end{aligned}
+\]
+Zastosowano $\overline{S}AB+SA=AB+SA$. Postać NAND--NAND:
+\[
+Y=\overline{\overline{AB}\cdot\overline{AS}\cdot\overline{BS}}.
+\]
+\subsection{Realizacja}
+Schemat wykorzystuje bramki NAND. Trzy pierwsze bramki tworzą zanegowane iloczyny $AS$, $AB$ i $BS$, a ostatnia bramka NAND realizuje ich sumę zgodnie z prawem de Morgana.
+\img[0.80\textwidth]{zadanie_2.jpg}{Sterowany układ AND/OR zrealizowany z bramek NAND.}
+\subsection{Wnioski}
+Sygnał $S$ wybiera AND lub OR; obie funkcje zrealizowano bramkami NAND.
+% ================================================================
+\section{Zadanie 3 -- Pełny sumator 1-bitowy}
+\subsection{Treść zadania}
+Zaprojektować pełny sumator 1-bitowy.
+\subsection{Tabela prawdy}
+\begin{center}
+\begin{tabular}{ccc|cc}
+\toprule
+$A$&$B$&$C_{\mathrm{in}}$&$S$&$C_{\mathrm{out}}$\\
+\midrule
+0&0&0&0&0\\
+0&0&1&1&0\\
+0&1&0&1&0\\
+0&1&1&0&1\\
+1&0&0&1&0\\
+1&0&1&0&1\\
+1&1&0&0&1\\
+1&1&1&1&1\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,2);
+\node[anchor=east] at (-0.7,2.45) {$ A\backslash BC_{\mathrm{in}} $};
+\node at (0.5,2.4) {$ 00 $};
+\node at (1.5,2.4) {$ 01 $};
+\node at (2.5,2.4) {$ 11 $};
+\node at (3.5,2.4) {$ 10 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (2.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {3};
+\node at (3.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {2};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {4};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {5};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {7};
+\node at (3.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {6};
+\draw[blue!75!black,thick,rounded corners=4pt] (1.1,1.1) rectangle (1.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (3.14,1.1400000000000001) rectangle (3.86,1.8599999999999999);
+\draw[green!45!black,thick,rounded corners=4pt] (0.18,0.18) rectangle (0.8200000000000001,0.8200000000000001);
+\draw[orange!85!black,thick,rounded corners=4pt] (2.1,0.1) rectangle (2.9,0.9);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $S$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{1\}$}: $\overline{A}\overline{B}C_{\mathrm{in}}$.
+\item \textcolor{red!75!black}{$\{2\}$}: $\overline{A}B\overline{C_{\mathrm{in}}}$.
+\item \textcolor{green!45!black}{$\{4\}$}: $A\overline{B}\overline{C_{\mathrm{in}}}$.
+\item \textcolor{orange!85!black}{$\{7\}$}: $ABC_{\mathrm{in}}$.
+\end{itemize}\end{minipage}\par\medskip
+Jedynki nie sąsiadują ze sobą, więc nie można skrócić sumy iloczynów przez łączenie pól. Rozpoznanie funkcji nieparzystości pozwala zastosować dwie bramki XOR.
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,2);
+\node[anchor=east] at (-0.7,2.45) {$ A\backslash BC_{\mathrm{in}} $};
+\node at (0.5,2.4) {$ 00 $};
+\node at (1.5,2.4) {$ 01 $};
+\node at (2.5,2.4) {$ 11 $};
+\node at (3.5,2.4) {$ 10 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (2.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {3};
+\node at (3.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {2};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {4};
+\node at (1.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {5};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {7};
+\node at (3.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {6};
+\draw[blue!75!black,thick,rounded corners=4pt] (2.1,0.1) rectangle (3.9,0.9);
+\draw[red!75!black,thick,rounded corners=4pt] (1.1400000000000001,0.14) rectangle (2.86,0.86);
+\draw[green!45!black,thick,rounded corners=4pt] (2.18,0.18) rectangle (2.82,1.82);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $C_{\mathrm{out}}$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{6,7\}$}: $AB$.
+\item \textcolor{red!75!black}{$\{5,7\}$}: $AC_{\mathrm{in}}$.
+\item \textcolor{green!45!black}{$\{3,7\}$}: $BC_{\mathrm{in}}$.
+\end{itemize}\end{minipage}\par\medskip
+
+\subsection{Minimalizacja}
+\[
+\begin{aligned}
+S&=\overline{A}\overline{B}C_{\mathrm{in}}
+  +\overline{A}B\overline{C_{\mathrm{in}}}
+  +A\overline{B}\overline{C_{\mathrm{in}}}+ABC_{\mathrm{in}}\\
+ &=C_{\mathrm{in}}(\overline{A}\overline{B}+AB)
+  +\overline{C_{\mathrm{in}}}(\overline{A}B+A\overline{B})\\
+ &=(A\xor B)\xor C_{\mathrm{in}}.
+\end{aligned}
+\]
+\[
+\begin{aligned}
+C_{\mathrm{out}}&=AB\overline{C_{\mathrm{in}}}+ABC_{\mathrm{in}}
+ +A\overline{B}C_{\mathrm{in}}+\overline{A}BC_{\mathrm{in}}\\
+ &=AB+C_{\mathrm{in}}(A\overline{B}+\overline{A}B)\\
+ &=AB+C_{\mathrm{in}}(A\xor B)
+  =AB+AC_{\mathrm{in}}+BC_{\mathrm{in}}.
+\end{aligned}
+\]
+\subsection{Realizacja}
+Dolna gałąź z dwiema bramkami XOR tworzy bit sumy. Górna część układu realizuje trzy iloczyny odpowiedzialne za przeniesienie, zapisane w strukturze NAND--NAND.
+\img[0.85\textwidth]{zadanie_3.jpg}{Pełny sumator jednobitowy.}
+\subsection{Wnioski}
+Pełny sumator uwzględnia trzy bity wejściowe. Przeniesienie pojawia się wtedy, gdy co najmniej dwa z trzech wejść mają wartość 1.
+% ================================================================
+\section{Zadanie 4 -- Pełny subtraktor 1-bitowy}
+\subsection{Treść zadania}
+Zaprojektować pełny subtraktor 1-bitowy.
+\subsection{Tabela prawdy}
+\begin{center}
+\begin{tabular}{ccc|cc}
+\toprule
+$A$&$B$&$B_{\mathrm{in}}$&$D$&$B_{\mathrm{out}}$\\
+\midrule
+0&0&0&0&0\\
+0&0&1&1&1\\
+0&1&0&1&1\\
+0&1&1&0&1\\
+1&0&0&1&0\\
+1&0&1&0&0\\
+1&1&0&0&0\\
+1&1&1&1&1\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,2);
+\node[anchor=east] at (-0.7,2.45) {$ A\backslash BB_{\mathrm{in}} $};
+\node at (0.5,2.4) {$ 00 $};
+\node at (1.5,2.4) {$ 01 $};
+\node at (2.5,2.4) {$ 11 $};
+\node at (3.5,2.4) {$ 10 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (2.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {3};
+\node at (3.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {2};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {4};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {5};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {7};
+\node at (3.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {6};
+\draw[blue!75!black,thick,rounded corners=4pt] (1.1,1.1) rectangle (1.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (3.14,1.1400000000000001) rectangle (3.86,1.8599999999999999);
+\draw[green!45!black,thick,rounded corners=4pt] (0.18,0.18) rectangle (0.8200000000000001,0.8200000000000001);
+\draw[orange!85!black,thick,rounded corners=4pt] (2.1,0.1) rectangle (2.9,0.9);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $D$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{1\}$}: $\overline{A}\overline{B}B_{\mathrm{in}}$.
+\item \textcolor{red!75!black}{$\{2\}$}: $\overline{A}B\overline{B_{\mathrm{in}}}$.
+\item \textcolor{green!45!black}{$\{4\}$}: $A\overline{B}\overline{B_{\mathrm{in}}}$.
+\item \textcolor{orange!85!black}{$\{7\}$}: $ABB_{\mathrm{in}}$.
+\end{itemize}\end{minipage}\par\medskip
+Tak jak dla bitu sumy, wszystkie jedynki są odizolowane; funkcję różnicy można zapisać za pomocą XOR.
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,2);
+\node[anchor=east] at (-0.7,2.45) {$ A\backslash BB_{\mathrm{in}} $};
+\node at (0.5,2.4) {$ 00 $};
+\node at (1.5,2.4) {$ 01 $};
+\node at (2.5,2.4) {$ 11 $};
+\node at (3.5,2.4) {$ 10 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (2.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {3};
+\node at (3.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {2};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {4};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {5};
+\node at (2.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {7};
+\node at (3.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {6};
+\draw[blue!75!black,thick,rounded corners=4pt] (2.1,1.1) rectangle (3.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (1.1400000000000001,1.1400000000000001) rectangle (2.86,1.8599999999999999);
+\draw[green!45!black,thick,rounded corners=4pt] (2.18,0.18) rectangle (2.82,1.82);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $B_{\mathrm{out}}$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{2,3\}$}: $\overline{A}B$.
+\item \textcolor{red!75!black}{$\{1,3\}$}: $\overline{A}B_{\mathrm{in}}$.
+\item \textcolor{green!45!black}{$\{3,7\}$}: $BB_{\mathrm{in}}$.
+\end{itemize}\end{minipage}\par\medskip
+
+\subsection{Minimalizacja}
+\[
+\begin{aligned}
+D&=\overline{A}\overline{B}B_{\mathrm{in}}
+ +\overline{A}B\overline{B_{\mathrm{in}}}
+ +A\overline{B}\overline{B_{\mathrm{in}}}+ABB_{\mathrm{in}}\\
+ &=B_{\mathrm{in}}(\overline{A}\overline{B}+AB)
+  +\overline{B_{\mathrm{in}}}(\overline{A}B+A\overline{B})\\
+ &=(A\xor B)\xor B_{\mathrm{in}}.
+\end{aligned}
+\]
+\[
+\begin{aligned}
+B_{\mathrm{out}}&=\overline{A}\overline{B}B_{\mathrm{in}}
+ +\overline{A}B\overline{B_{\mathrm{in}}}
+ +\overline{A}BB_{\mathrm{in}}+ABB_{\mathrm{in}}\\
+ &=\overline{A}B+\overline{A}\overline{B}B_{\mathrm{in}}+ABB_{\mathrm{in}}\\
+ &=\overline{A}B+\overline{A}B_{\mathrm{in}}+BB_{\mathrm{in}}.
+\end{aligned}
+\]
+\subsection{Realizacja}
+Bit różnicy jest generowany przez dwie bramki XOR. W torze pożyczki wykorzystano negację $A$ i strukturę NAND--NAND odpowiadającą powyższej funkcji.
+\img[0.85\textwidth]{zadanie_4.jpg}{Pełny subtraktor jednobitowy.}
+\subsection{Wnioski}
+Różnicę wyznaczają bramki XOR, a pożyczkę -- funkcja uwzględniająca zanegowaną odjemną $A$.
+% ================================================================
+\section{Zadanie 5 -- 4-bitowy kaskadowy sumator równoległy}
+\subsection{Treść zadania}
+Z gotowych modułów zrealizować 4-bitowy kaskadowy sumator równoległy.
+\subsection{Zasada działania}
+Cztery pełne sumatory 1-bitowe połączono kaskadowo. Przeniesienie z pozycji mniej znaczącej jest wejściem przeniesienia kolejnego stopnia:
+\[
+(A_0,B_0,C_0)\rightarrow(S_0,C_1),
+\]
+\[
+(A_1,B_1,C_1)\rightarrow(S_1,C_2),
+\]
+\[
+(A_2,B_2,C_2)\rightarrow(S_2,C_3),
+\]
+\[
+(A_3,B_3,C_3)\rightarrow(S_3,C_4).
+\]
+\subsection{Uproszczenie zależności}
+\[
+\begin{aligned}
+P_i&=A_i\xor B_i,\qquad G_i=A_iB_i,\\
+S_i&=P_i\xor C_i,\qquad C_{i+1}=G_i+P_iC_i,
+\quad i=0,1,2,3.
+\end{aligned}
+\]
+\subsection{Realizacja}
+Na schemacie widać cztery identyczne stopnie pełnego sumatora oraz propagację przeniesienia od $C_0$ do $C_4$.
+\img[0.72\textwidth]{zadanie_5.jpg}{Czterobitowy sumator z kaskadowym przeniesieniem.}
+\subsection{Przykładowa weryfikacja}
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+$A$&$B$&$C_0$&$C_4S_3S_2S_1S_0$\\
+\midrule
+0000&0000&0&00000\\
+0011&0101&0&01000\\
+1111&0001&0&10000\\
+1010&0101&0&01111\\
+0111&1000&1&10000\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Wnioski}
+Układ dodaje dwie liczby 4-bitowe i $C_0$. Propagacja przeniesienia przez kolejne stopnie zwiększa opóźnienie wyniku.
+% ================================================================
+\section{Zadanie 6 -- Uzupełnienie do dwóch z wykorzystaniem 7483}
+\subsection{Treść zadania}
+Za pomocą układu 7483 zrealizować układ generujący uzupełnienie do dwóch liczby 4-bitowej.
+\subsection{Zasada działania}
+Dla liczby 4-bitowej $A=A_3A_2A_1A_0$ uzupełnienie do dwóch wyznacza się z zależności
+\[
+Y=(\overline{A}+1)\bmod 16=(15-A+1)\bmod 16=(-A)\bmod 16.
+\]
+Do sumatora podaje się zanegowane bity $A$, $B=0000$ oraz $C_0=1$. Przeniesienie końcowe pomija się, zachowując wynik modulo 16.
+\subsection{Realizacja}
+Schemat przedstawia negację bitów wejściowych i dodanie jedynki za pomocą czterech kaskadowo połączonych sumatorów 1-bitowych. Jest to model funkcjonalny operacji realizowanej przez 7483; ilustracja nie przedstawia bezpośredniego połączenia wyprowadzeń scalonego układu 7483.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth,height=0.65\textheight,keepaspectratio]{zadanie_6.jpg}
+\caption{Bramkowy model wyznaczania uzupełnienia do dwóch.}
+\end{figure}
+\subsection{Tabela testów}
+\begin{center}
+\begin{tabular}{c|c}
+\toprule
+$A$&$Y=\overline A+1$\\
+\midrule
+0000&0000\\
+0001&1111\\
+0010&1110\\
+0101&1011\\
+1000&1000\\
+1111&0001\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Wnioski}
+Zanegowanie bitów i dodanie jedynki daje 4-bitowe uzupełnienie do dwóch.
+% ================================================================
+\section{Zadanie 7 -- Sterowane przepuszczenie lub negacja bitu}
+\subsection{Treść zadania}
+Zrealizować układ, który w zależności od sygnału sterującego daje na wyjściu sygnał wejściowy albo jego negację. Korzystając z takiego układu zaprojektować układ realizujący uzupełnienie do dwóch liczby 4-bitowej.
+\subsection{Część A -- układ 1-bitowy}
+Przyjęto, że $M=0$ oznacza przepuszczenie sygnału, a $M=1$ jego negację.
+\begin{center}
+\begin{tabular}{cc|c}
+\toprule
+$M$&$X$&$Y$\\
+\midrule
+0&0&0\\
+0&1&1\\
+1&0&1\\
+1&1&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (2,2);
+\node[anchor=east] at (-0.7,2.45) {$ M\backslash X $};
+\node at (0.5,2.4) {$ 0 $};
+\node at (1.5,2.4) {$ 1 $};
+\node at (-.4,1.5) {$ 0 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {0};
+\node at (1.5,1.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {1};
+\node at (-.4,0.5) {$ 1 $};
+\node at (0.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {2};
+\node at (1.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {3};
+\draw[blue!75!black,thick,rounded corners=4pt] (1.1,1.1) rectangle (1.9,1.9);
+\draw[red!75!black,thick,rounded corners=4pt] (0.14,0.14) rectangle (0.86,0.86);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $Y$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{1\}$}: $\overline{M}X$.
+\item \textcolor{red!75!black}{$\{2\}$}: $M\overline{X}$.
+\end{itemize}\end{minipage}\par\medskip
+
+\textbf{Minimalizacja:}
+\[
+Y=\overline{M}X+M\overline{X}=X\xor M.
+\]
+Zatem pojedyncza bramka XOR realizuje dokładnie wymaganą funkcję.
+\img[0.45\textwidth]{zadanie_7.jpg}{Sterowana negacja pojedynczego bitu za pomocą XOR.}
+\subsection{Część B -- rozszerzenie do liczby 4-bitowej}
+Cztery identyczne układy XOR można zastosować równolegle do wszystkich bitów. Aby otrzymać sterowaną negację arytmetyczną, do wyniku należy dodać sygnał $M$:
+\[
+Y=((A\xor M)+M)\bmod 16,
+\]
+gdzie zapis $A\xor M$ oznacza wykonanie XOR każdego bitu $A_i$ z tym samym sygnałem $M$. Dla $M=0$ otrzymujemy $Y=A$, natomiast dla $M=1$:
+\[
+Y=\overline A+1,
+\]
+czyli uzupełnienie do dwóch (modulo 16).
+Poniższy schemat przedstawia realizację układu 4-bitowego dla wejść $A_0$--$A_3$ i wyjść $Y_0$--$Y_3$.
+\img[0.78\textwidth]{zadanie_7b.jpg}{Sterowane uzupełnienie do dwóch liczby czterobitowej.}
+\subsection{Przykładowa weryfikacja}
+\begin{center}
+\begin{tabular}{c|c|c}
+\toprule
+$M$&$A$&$Y$\\
+\midrule
+0&0101&0101\\
+1&0101&1011\\
+1&0000&0000\\
+1&1111&0001\\
+0&1010&1010\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Wnioski}
+Sterowanie XOR i przeniesieniem wejściowym pozwala uzyskać $Y=A$ dla $M=0$ lub uzupełnienie do dwóch dla $M=1$.
+% ================================================================
+\section{Zadanie 8 -- Detekcja liczby z przedziału 5--10}
+\subsection{Treść zadania}
+Zaprojektować układ, który sprawdza, czy 4-bitowa liczba wejściowa należy do przedziału 5--10. Można wykorzystać komparator scalony 7485.
+\subsection{Tabela prawdy}
+Przyjęto standardowo $X_3$ jako bit najbardziej znaczący, a $X_0$ jako najmniej znaczący.
+\begin{center}
+\begin{tabular}{c|cccc|c}
+\toprule
+wartość&$X_3$&$X_2$&$X_1$&$X_0$&$Y$\\
+\midrule
+0&0&0&0&0&0\\
+1&0&0&0&1&0\\
+2&0&0&1&0&0\\
+3&0&0&1&1&0\\
+4&0&1&0&0&0\\
+5&0&1&0&1&1\\
+6&0&1&1&0&1\\
+7&0&1&1&1&1\\
+8&1&0&0&0&1\\
+9&1&0&0&1&1\\
+10&1&0&1&0&1\\
+11&1&0&1&1&0\\
+12&1&1&0&0&0\\
+13&1&1&0&1&0\\
+14&1&1&1&0&0\\
+15&1&1&1&1&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Mapy Karnaugha i grupowanie jedynek}
+\par\medskip\noindent\begin{minipage}{\textwidth}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1.05cm,y=0.85cm,font=\small]
+\draw[gray] (0,0) grid (4,4);
+\node[anchor=east] at (-0.7,4.45) {$ X_3X_2\backslash X_1X_0 $};
+\node at (0.5,4.4) {$ 00 $};
+\node at (1.5,4.4) {$ 01 $};
+\node at (2.5,4.4) {$ 11 $};
+\node at (3.5,4.4) {$ 10 $};
+\node at (-.4,3.5) {$ 00 $};
+\node at (0.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,3.98) {0};
+\node at (1.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,3.98) {1};
+\node at (2.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,3.98) {3};
+\node at (3.5,3.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,3.98) {2};
+\node at (-.4,2.5) {$ 01 $};
+\node at (0.5,2.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,2.98) {4};
+\node at (1.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,2.98) {5};
+\node at (2.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,2.98) {7};
+\node at (3.5,2.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,2.98) {6};
+\node at (-.4,1.5) {$ 11 $};
+\node at (0.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,1.98) {12};
+\node at (1.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,1.98) {13};
+\node at (2.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,1.98) {15};
+\node at (3.5,1.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,1.98) {14};
+\node at (-.4,0.5) {$ 10 $};
+\node at (0.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (0.04,0.98) {8};
+\node at (1.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (1.04,0.98) {9};
+\node at (2.5,0.5) {\textbf{0}};
+\node[anchor=north west,font=\tiny,text=gray] at (2.04,0.98) {11};
+\node at (3.5,0.5) {\textbf{1}};
+\node[anchor=north west,font=\tiny,text=gray] at (3.04,0.98) {10};
+\draw[blue!75!black,thick,rounded corners=4pt] (1.1,2.1) rectangle (2.9,2.9);
+\draw[red!75!black,thick,rounded corners=4pt] (2.14,2.14) rectangle (3.86,2.86);
+\draw[green!45!black,thick,rounded corners=4pt] (0.18,0.18) rectangle (0.8200000000000001,0.8200000000000001);
+\draw[green!45!black,thick,rounded corners=4pt] (3.18,0.18) rectangle (3.82,0.8200000000000001);
+\draw[orange!85!black,thick,rounded corners=4pt] (0.1,0.1) rectangle (1.9,0.9);
+\end{tikzpicture}
+\caption{Mapa Karnaugha funkcji $Y$.}
+\end{figure}
+\noindent Grupy i odpowiadające im składniki:
+\begin{itemize}[nosep,leftmargin=1.6em]
+\item \textcolor{blue!75!black}{$\{5,7\}$}: $\overline{X_3}X_2X_0$.
+\item \textcolor{red!75!black}{$\{6,7\}$}: $\overline{X_3}X_2X_1$.
+\item \textcolor{green!45!black}{$\{8,10\}$}: $X_3\overline{X_2}\overline{X_0}$.
+\item \textcolor{orange!85!black}{$\{8,9\}$}: $X_3\overline{X_2}\overline{X_1}$.
+\end{itemize}\end{minipage}\par\medskip
+
+\subsection{Minimalizacja}
+Dla kolejności zmiennych $X_3,X_2,X_1,X_0$:
+\[
+Y=\Sigma m(5,6,7,8,9,10).
+\]
+\[
+\begin{aligned}
+Y&=\overline{X_3}X_2
+ (\overline{X_1}X_0+X_1\overline{X_0}+X_1X_0)\\
+ &\quad+X_3\overline{X_2}
+ (\overline{X_1}\overline{X_0}+\overline{X_1}X_0+X_1\overline{X_0})\\
+ &=\overline{X_3}X_2(X_0+X_1\overline{X_0})
+  +X_3\overline{X_2}(\overline{X_1}+X_1\overline{X_0})\\
+ &=\overline{X_3}X_2(X_1+X_0)
+  +X_3\overline{X_2}(\overline{X_1}+\overline{X_0})\\
+ &=\overline{X_3}X_2X_0+\overline{X_3}X_2X_1\\
+ &\quad+X_3\overline{X_2}\overline{X_0}
+  +X_3\overline{X_2}\overline{X_1}.
+\end{aligned}
+\]
+\subsection{Wersja A -- realizacja z bramek}
+Cztery trójwejściowe bramki NAND tworzą zanegowane składniki iloczynowe, a końcowa bramka NAND wykonuje ich sumę zgodnie z prawem de Morgana.
+\img{zadanie_8.jpg}{Bramkowa realizacja detektora przedziału 5--10.}
+\subsection{Wersja B -- realizacja z komparatorami 7485}
+Dwa komparatory 7485 sprawdzają granice przedziału:
+\[
+Y=(X\geq5)\cdot(X\leq10).
+\]
+Równoważnie można wykrywać stany spoza zakresu i zanegować ich sumę:
+\[
+Y=\overline{(X<5)+(X>10)}.
+\]
+Wejścia kaskadowe obu komparatorów ustawia się jako:
+\[
+I_{A>B}=0,\qquad I_{A<B}=0,\qquad I_{A=B}=1.
+\]
+Bramka NOR łączy wyjścia $X<5$ i $X>10$, dając $Y=1$ wyłącznie wewnątrz przedziału.
+\img[0.95\textwidth]{zadanie_8b.jpg}{Detektor przedziału 5--10 z komparatorami 7485.}
+\subsection{Weryfikacja}
+\begin{center}
+\begin{tabular}{c|c}
+\toprule
+$X$&$Y$\\
+\midrule
+0100 (4)&0\\
+0101 (5)&1\\
+0111 (7)&1\\
+1000 (8)&1\\
+1010 (10)&1\\
+1011 (11)&0\\
+1111 (15)&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+\subsection{Wnioski}
+Wersja A (NAND--NAND) i wersja B (dwa komparatory 7485) wykrywają wartości od 5 do 10 włącznie.
+% ================================================================
+\section{Wnioski końcowe}
+Tabele prawdy i zależności logiczne posłużyły do wyznaczenia funkcji realizowanych bramkami. Kaskadowe łączenie sumatorów umożliwiło dodawanie liczb 4-bitowych, a negacja bitów i dodanie jedynki -- wyznaczanie uzupełnienia do dwóch. Zastosowanie układów 7483 i 7485 upraszcza realizację operacji arytmetycznych oraz porównywania liczb.
+
+
+Mapy Karnaugha pokazały, że przeniesienie sumatora, pożyczkę subtraktora
+i sterowaną funkcję AND/OR można opisać trzema dwuliterowymi iloczynami.
+Detektor przedziału wymaga czterech trójliterowych iloczynów w minimalnej
+postaci sumacyjnej. Funkcje sumy i różnicy mają odizolowane jedynki,
+jednak zapis XOR pozwala zrealizować je zwięźlej niż bezpośrednia suma mintermów.
+
+W układach czterobitowych należy odróżnić przeniesienie końcowe od
+przepełnienia w interpretacji ze znakiem. Uzupełnienie do dwóch jest
+wyznaczane modulo 16: dla słowa $1000$ wynikiem pozostaje $1000$,
+ponieważ liczba $+8$ nie mieści się w czterobitowym kodzie U2.
+Ocena opóźnień i zachowania rzeczywistych układów wymaga osobnych pomiarów;
+przedstawiona analiza dotyczy ustalonych wartości logicznych.
+\end{document}
+
