@@ -1,0 +1,8 @@
+name: "my-app"
+
+services:
+  my-app:
+    image: my-app:1
+    container_name: "my-app"
+    volumes:
+      - "../orders:/app/orders"
